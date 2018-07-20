@@ -13,3 +13,5 @@
 `2018/06/16 add algorithm of C+Q, A two part`
 
 `2018/06/25 generate random answer`
+
+`2018/07/20 change output format into csv file`

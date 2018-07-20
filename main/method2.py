@@ -17,7 +17,7 @@ def readData(path):
     t = time.time()
     with open(path, 'r') as reader:
         data = json.loads(reader.read())
-    print("It took %.2f sec to read data" % (time.time() - t))
+    #print("It took %.2f sec to read data" % (time.time() - t))
     return data
 
 
@@ -72,7 +72,7 @@ def generateAnswer(data):
         i += 1
     
     #tag = (anslist[ans] == ca )
-    print("The predict answer is %s." %(anslist[ans]))
+    #print("The predict answer is %s." %(anslist[ans]))
     #print("The correct answer is %s." %ca)
     return anslist[ans]
 
@@ -80,36 +80,64 @@ def generateAnswer(data):
 
 def main():
     t = time.time()
-    pathData = './CQA/'
+    pathData = './Result/'
+    # clear result
+    f = open('method2_result.txt', 'w')
+    f.close()
     totalData = 1500
-    
+    wrongid = 0
+    ansList = []
 #======  read data in for loop  ======
     for i in range(totalData):
-        print("Start reading data in" + pathData + str(i) + '.json')
+        #print("Start reading data in" + pathData + str(i) + '.json')
         jsonData = readData(pathData + str(i) + '.json')
         
-        print("Start generate output of" + pathData + str(i) + '.json')
+        #print("Start generate output of" + pathData + str(i) + '.json')
 
 #=== check format is correct or not ===
         randomNum = True
         if len(jsonData['answer']) != 4:
             randomNum = False
+            wrongid += 1
         if randomNum == False:
             ansTag = str(random.randint(1,4))
         elif randomNum == True:
             ansTag = generateAnswer(jsonData)
 
-#====== output data =======
+        ansList.append(ansTag)
         
-        with open("method2_result.txt", 'a+') as file:
-            file.write(ansTag)
-            file.write("\n")
+#====== output data =======
+        # with open("method2_result.txt", 'a+') as file:
+        #     file.write(ansTag)
+        #     file.write("\n")
 
-        print("Output done!")
+    outputList = []
+    outputMerge = []
+    readFileName = 'output.csv'
+    outputFileName = 'outputMerge.csv'
+
+    #read question number from csv file
+    with open(readFileName, newline= '') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        outputList = list(spamreader)
+
+        for i in range(0, len(ansList), 1):
+            data = str(outputList[i+1][0])+ str(ansList[i])
+            outputMerge.append(data)
+
+    with open(outputFileName, 'w', newline='') as csvfile:
+        csvfile.write('ID,Answer')
+        csvfile.write('\n')
+        for i in outputMerge:                     
+            csvfile.write(i)    
+            csvfile.write('\n')
+        
+        #print("Output done!")
         
     print("=========Finished========")
+    print("Total wrong corpus format numbers are %d" % wrongid)
     print("It took %.2f sec to process" % (time.time() - t))
-
+    # print(ansList)
 
 pathModel = './word2vec/wiki/wiki_zh_tw(skip300)/word2vec.model'
 model = models.Word2Vec.load(pathModel)
